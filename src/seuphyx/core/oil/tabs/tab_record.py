@@ -1,14 +1,11 @@
 """
 Tab 1: 数据记录
 """
-# built-in
-from pathlib import Path
 # third-party
 import streamlit as st
 import pandas as pd
 # seuphyx
 from seuphyx.core.oil.utils import plotly_plot
-import seuphyx
 
 
 def render_tab_record():
@@ -16,9 +13,8 @@ def render_tab_record():
     work_dir = st.session_state.work_dir
     oil_drop_csv = work_dir / "oil_drop.csv"
 
-    # reference data file
-    data_dir = Path(seuphyx.__file__).parent / "data"
-    reference_file = data_dir / "oil_drop_reference.csv"
+    if 'data_ref_record' not in st.session_state:
+        st.session_state.data_ref_record = st.session_state.data_ref_empty
 
     # 记录数据表单
     with st.form(key="write_data", clear_on_submit=True):
@@ -93,7 +89,7 @@ def render_tab_record():
         plotly_plot(
             title="实验数据散点图",
             grouped_data={
-                "参考数据": st.session_state.data_ref.values,
+                "参考数据": st.session_state.data_ref_record.values,
                 "实验数据": st.session_state.data.values,
             },
             key="scatter_plot",
@@ -101,10 +97,8 @@ def render_tab_record():
         )
 
         if st.button("**显示/隐藏参考数据**"):
-            data_ref = pd.DataFrame(
-                columns=["FallingTime(t/s)", "BalanceVoltage(U/V)"])
-            if st.session_state.data_ref.empty:
-                data_ref = pd.read_csv(reference_file)
-
-            st.session_state.data_ref = data_ref
+            if st.session_state.data_ref_record.empty:
+                st.session_state.data_ref_record = st.session_state.data_ref
+            else:
+                st.session_state.data_ref_record = st.session_state.data_ref_empty
             st.rerun()

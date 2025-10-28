@@ -63,7 +63,8 @@ div.st-key-app_title div.stHeading h1::before{
     display: inline-block;
     width: 4.5rem;
     height: 4.5rem;
-    background-image: url("data:image/svg+xml;base64,''' + __import__('base64').b64encode(seu_logo_svg.encode()).decode() + '''");
+    background-image: url("data:image/svg+xml;base64,''' + __import__(
+    'base64').b64encode(seu_logo_svg.encode()).decode() + '''");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -75,7 +76,8 @@ div.st-key-app_title div.stHeading h1::after {
     display: inline-block;
     width: 4.5rem;
     height: 4.5rem;
-    background-image: url("data:image/svg+xml;base64,''' + __import__('base64').b64encode(seu_phy_logo_svg.encode()).decode() + '''");
+    background-image: url("data:image/svg+xml;base64,''' + __import__(
+        'base64').b64encode(seu_phy_logo_svg.encode()).decode() + '''");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -114,7 +116,7 @@ div.st-key-experiment_header .stMarkdown {
 }
 
 div.st-key-experiment_header .stMarkdown p {
-    margin: 0;
+    margin: 1000;
     font-size: 2rem;
     font-weight: 500;
 }
@@ -127,8 +129,9 @@ with st.container(key="experiment_header"):
     with col1:
         st.markdown("**实验名称：密立根油滴实验**")
     with col2:
-        st.markdown('<p style="text-align: right; font-size: 2rem; font-weight: 700; margin: 0;"><strong>by 东南大学物理实验中心</strong></p>', unsafe_allow_html=True)
-
+        st.markdown(
+            '<p style="text-align: right; font-size: 2rem; font-weight: 700; margin: 0;"><strong>by 东南大学物理实验中心</strong></p>',
+            unsafe_allow_html=True)
 
 # 学生学号登陆
 if 'login' not in st.session_state:
@@ -143,6 +146,7 @@ else:
         dirname = pwd / f"{datetime.now():%Y.%m.%d}" / f"{suffix}"
         dirname.mkdir(parents=True, exist_ok=True)
         st.session_state.work_dir = dirname
+        st.session_state.student = {'name': student_name, 'id': student_id}
 
     st.sidebar.success(f"欢迎 {student_name} ({student_id}) 开始本次课程！")
     st.sidebar.success(f"所有数据将保存至 {st.session_state.work_dir} 目录下。")
@@ -169,6 +173,16 @@ else:
     oil_drop_csv = work_dir / "oil_drop.csv"
     pio.templates.default = "ggplot2"
 
+    # 初始化相关参数
+    data_dir = Path(seuphyx.__file__).parent / "data"
+    st.session_state.data_dir = data_dir
+    reference_file = data_dir / "oil_drop_reference.csv"
+    st.session_state.data_ref = pd.read_csv(reference_file)
+    st.session_state.data_ref_empty = pd.DataFrame(
+        columns=["FallingTime(t/s)", "BalanceVoltage(U/V)"])
+    st.session_state.data_ref_pred_empty = pd.DataFrame(
+        columns=["FallingTime(t/s)", "BalanceVoltage(U/V)", "Predicted"])
+
     # 显示已保存的数据点
     if oil_drop_csv.exists():
         if len(st.session_state.data.values) == 0:
@@ -177,7 +191,6 @@ else:
         st.sidebar.subheader("已保存的数据点：")
         st.sidebar.dataframe(st.session_state.data)
 
-    # 创建 Tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         ["1. 数据记录", "2. 训练模型（选做）", "3. 数据分类", "4. 符号回归", "5. 打印报告"])
 
@@ -195,4 +208,4 @@ else:
         render_tab_regress()
 
     with tab5:
-        render_tab_report(work_dir, student_id, student_name)
+        render_tab_report()

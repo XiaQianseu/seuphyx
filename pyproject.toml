@@ -28,6 +28,12 @@ dependencies = [
     'streamlit',
     'streamlit_change_language',
     'streamlit-navigation-bar',
+    'pysr',
+    'numpy==1.26.4',
+    'scikit-learn==1.6.1',
+    'reportlab==4.4.4',
+    'kaleido==0.1.0',
+    'plotly==5.18.0',
 ]
 
 
